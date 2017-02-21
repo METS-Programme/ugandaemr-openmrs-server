@@ -26,13 +26,11 @@ class Database:
 
     def insert_bulk(self, q, data):
         try:
-            print q
             self.cursor.executemany(q, data)
             self.connection.commit()
         except MySQLdb.Error, e:
             self.connection.rollback()
             try:
-                print data
                 print "MySQL Error [%d]: %s" % (e.args[0], e.args[1])
             except IndexError:
                 print "MySQL Error: %s" % str(e)
@@ -44,6 +42,18 @@ class Database:
 
     def query_one(self, query):
         cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(query)
+        return cursor.fetchone()
+
+    def query_with_data(self, query, data):
+        cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(query, data)
+        return cursor.fetchall()
+
+    def query_one_with_data(self, query, data):
+        cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
+
+        query = query % data
         cursor.execute(query)
         return cursor.fetchone()
 

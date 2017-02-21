@@ -7,6 +7,8 @@ mappings = {
     'org.openmrs.PersonAttribute': 'person_attribute',
     'org.openmrs.Patient': 'patient',
     'org.openmrs.PatientIdentifier': 'patient_identifier',
-    'org.openmrs.PatientIdentifierType': 'patient_identifier_type',
     'org.openmrs.Visit': 'visit',
+    'org.openmrs.EncounterProvider': 'encounter_provider',
+    'org.openmrs.Provider': 'provider',
+    'org.openmrs.EncounterRole': 'encounter_role'
 }

@@ -18,11 +18,13 @@ add_person_name = (
     "(preferred,person,prefix,given_name,middle_name,family_name_prefix,family_name,family_name2,family_name_suffix,degree,creator,date_created,voided,voided_by,date_voided,void_reason,changed_by,date_changed,uuid,facility,state) "
     "VALUES (%(preferred)s,%(person)s,%(prefix)s,%(given_name)s,%(middle_name)s,%(family_name_prefix)s,%(family_name)s,%(family_name2)s,%(family_name_suffix)s,%(degree)s,%(creator)s,%(date_created)s,%(voided)s,%(voided_by)s,%(date_voided)s,%(void_reason)s,%(changed_by)s,%(date_changed)s,%(uuid)s,%(facility)s,%(state)s)"
 )
+
 add_patient = (
     "INSERT INTO patient "
-    "(patient,creator,date_created,changed_by,date_changed,voided,voided_by,date_voided,void_reason,allergy_status,facility,state) "
-    "VALUES (%(patient)s,%(creator)s,%(date_created)s,%(changed_by)s,%(date_changed)s,%(voided)s,%(voided_by)s,%(date_voided)s,%(void_reason)s,%(allergy_status)s,%(facility)s,%(state)s)"
+    "(gender,birthdate,birthdate_estimated,dead,death_date,cause_of_death,creator,date_created,changed_by,date_changed,voided,voided_by,date_voided,void_reason,uuid,facility,state,deathdate_estimated,birthtime,allergy_status) "
+    "VALUES (%(gender)s,%(birthdate)s,%(birthdate_estimated)s,%(dead)s,%(death_date)s,%(cause_of_death)s,%(creator)s,%(date_created)s,%(changed_by)s,%(date_changed)s,%(voided)s,%(voided_by)s,%(date_voided)s,%(void_reason)s,%(uuid)s,%(facility)s,%(state)s,%(deathdate_estimated)s,%(birthtime)s,%(allergy_status)s)"
 )
+
 add_patient_identifier = (
     "INSERT INTO patient_identifier "
     "(patient,identifier,identifier_type,preferred,location,creator,date_created,date_changed,changed_by,voided,voided_by,date_voided,void_reason,uuid,facility,state) "
@@ -30,8 +32,8 @@ add_patient_identifier = (
 )
 add_visit = (
     "INSERT INTO visit "
-    "(patient,visit_type,date_started,date_stopped,indication_concept,location,creator,date_created,changed_by,date_changed,voided,voided_by,date_voided,void_reason,uuid,facility,state) "
-    "VALUES (%(patient)s,%(visit_type)s,%(date_started)s,%(date_stopped)s,%(indication_concept)s,%(location)s,%(creator)s,%(date_created)s,%(changed_by)s,%(date_changed)s,%(voided)s,%(voided_by)s,%(date_voided)s,%(void_reason)s,%(uuid)s,%(facility)s,%(state)s)"
+    "(patient,visit_type,start_datetime,stop_datetime,indication_concept,location,creator,date_created,changed_by,date_changed,voided,voided_by,date_voided,void_reason,uuid,facility,state) "
+    "VALUES (%(patient)s,%(visit_type)s,%(start_datetime)s,%(stop_datetime)s,%(indication_concept)s,%(location)s,%(creator)s,%(date_created)s,%(changed_by)s,%(date_changed)s,%(voided)s,%(voided_by)s,%(date_voided)s,%(void_reason)s,%(uuid)s,%(facility)s,%(state)s)"
 )
 add_encounter = (
     "INSERT INTO encounter "
@@ -46,8 +48,8 @@ add_obs = (
 
 add_encounter_provider = (
     "INSERT INTO encounter_provider "
-    "(encounter,provider,encounter_role,creator,date_created,uuid,facility,state) "
-    "VALUES (%(encounter)s, %(provider)s, %(encounter_role)s, %(creator)s, %(date_created)s, %(uuid)s, %(facility)s, %(state)s)"
+    "(encounter,provider,encounter_role,creator,date_created,changed_by,date_changed,voided,date_voided,voided_by,void_reason,uuid,facility,state) "
+    "VALUES (%(encounter)s,%(provider)s,%(encounter_role)s,%(creator)s,%(date_created)s,%(changed_by)s,%(date_changed)s,%(voided)s,%(date_voided)s,%(voided_by)s,%(void_reason)s,%(uuid)s,%(facility)s,%(state)s)"
 )
 
 add_metadatasharing_imported_package = (
@@ -60,4 +62,20 @@ add_facility = (
     "INSERT INTO facility "
     "(uuid,name) "
     "VALUES (%(uuid)s, %(name)s)"
+)
+
+add_provider = (
+    "INSERT INTO provider "
+    "(person,name,identifier,creator,date_created,changed_by,date_changed,retired,retired_by,date_retired,retire_reason ,uuid,provider_role,facility,state) "
+    "VALUES (%(person)s,%(name)s,%(identifier)s,%(creator)s,%(date_created)s,%(changed_by)s,%(date_changed)s,%(retired)s,%(retired_by)s,%(date_retired)s ,%(retire_reason)s,%(uuid)s,%(provider_role)s,%(facility)s,%(state)s)"
+)
+
+add_encounter_role = (
+    "INSERT INTO encounter_role "
+    "(name,description,creator,date_created,changed_by,date_changed,retired,retired_by,date_retired,retire_reason,uuid,facility,state) "
+    "VALUES (%(name)s,%(description)s,%(creator)s,%(date_created)s,%(changed_by)s,%(date_changed)s,%(retired)s,%(retired_by)s,%(date_retired)s,%(retire_reason)s,%(uuid)s,%(facility)s,%(state)s)"
+)
+
+query_one = (
+    "SELECT * FROM  %(table_name)s WHERE %(primary_column)s = %(primary_value)s"
 )

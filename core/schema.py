@@ -2,16 +2,74 @@ import graphene
 from graphene import relay
 from graphene import resolve_only_args
 from graphene_sqlalchemy import SQLAlchemyConnectionField, SQLAlchemyObjectType
+
+from core.sql_queries import query_one
 from database import Database
+
+import types
 
 db = Database()
 
 
+class Person(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
+    id = graphene.ID()
+    gender = graphene.String()
+    birthdate = graphene.String()
+    birthdate_estimated = graphene.String()
+    dead = graphene.String()
+    death_date = graphene.String()
+
+    cause_of_death = graphene.String()
+    creator = graphene.String()
+    date_created = graphene.String()
+    changed_by = graphene.String()
+    date_changed = graphene.String()
+
+    voided = graphene.String()
+    voided_by = graphene.String()
+    date_voided = graphene.String()
+    void_reason = graphene.String()
+    uuid = graphene.String()
+
+    facility = graphene.String()
+    state = graphene.String()
+    deathdate_estimated = graphene.String()
+    birthtime = graphene.String()
+
+
+class Patient(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
+    id = graphene.ID()
+
+    patient = graphene.String()
+    creator = graphene.String()
+    date_created = graphene.String()
+    changed_by = graphene.String()
+    date_changed = graphene.String()
+
+    voided = graphene.String()
+    voided_by = graphene.String()
+    date_voided = graphene.String()
+    void_reason = graphene.String()
+    allergy_status = graphene.String()
+
+    facility = graphene.String()
+    state = graphene.String()
+
+
 class Encounter(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
     id = graphene.ID()
 
     encounter_type = graphene.String()
-    patient = graphene.String()
+    patient = graphene.Field(Patient)
     location = graphene.String()
     form = graphene.String()
     encounter_datetime = graphene.String()
@@ -33,11 +91,13 @@ class Encounter(graphene.ObjectType):
 
 
 class Obs(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
     id = graphene.ID()
     person = graphene.String()
     concept = graphene.String()
-    encounter = graphene.String()
-    encounter_object = graphene.Field(Encounter)
+    encounter = graphene.Field(Encounter)
     order = graphene.String()
     obs_datetime = graphene.String()
 
@@ -71,12 +131,11 @@ class Obs(graphene.ObjectType):
     state = graphene.String()
     previous_version = graphene.String()
 
-    def resolve_encounter_object(self, args, *_):
-        data = db.query_one("select * from encounter where uuid = '" + self.encounter + "'")
-        return Encounter(**data)
-
 
 class EncounterProvider(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
     id = graphene.ID()
     encounter = graphene.String()
     provider = graphene.String()
@@ -87,52 +146,10 @@ class EncounterProvider(graphene.ObjectType):
     uuid = graphene.String()
 
 
-class Person(graphene.ObjectType):
-    id = graphene.ID()
-    gender = graphene.String()
-    birthdate = graphene.String()
-    birthdate_estimated = graphene.String()
-    dead = graphene.String()
-    death_date = graphene.String()
-
-    cause_of_death = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-    changed_by = graphene.String()
-    date_changed = graphene.String()
-
-    voided = graphene.String()
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-    void_reason = graphene.String()
-    uuid = graphene.String()
-
-    facility = graphene.String()
-    state = graphene.String()
-    deathdate_estimated = graphene.String()
-    birthtime = graphene.String()
-
-
-class Patient(graphene.ObjectType):
-    id = graphene.ID()
-
-    patient = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-    changed_by = graphene.String()
-    date_changed = graphene.String()
-
-    voided = graphene.String()
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-    void_reason = graphene.String()
-    allergy_status = graphene.String()
-
-    facility = graphene.String()
-    state = graphene.String()
-
-
 class PersonName(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
     id = graphene.ID()
 
     preferred = graphene.String()
@@ -163,6 +180,9 @@ class PersonName(graphene.ObjectType):
 
 
 class PersonAttribute(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
     id = graphene.ID()
 
     person = graphene.String()
@@ -184,6 +204,9 @@ class PersonAttribute(graphene.ObjectType):
 
 
 class PatientIdentifier(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
     id = graphene.ID()
 
     patient = graphene.String()
@@ -208,6 +231,9 @@ class PatientIdentifier(graphene.ObjectType):
 
 
 class Visit(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
     id = graphene.ID()
 
     patient = graphene.String()
@@ -233,6 +259,9 @@ class Visit(graphene.ObjectType):
 
 
 class PersonAddress(graphene.ObjectType):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
     id = graphene.ID()
 
     person = graphene.String()
@@ -270,17 +299,42 @@ class PersonAddress(graphene.ObjectType):
     state = graphene.String()
 
 
+def get_one(**query_info):
+    return db.query_one_with_data(query_one, query_info)
+
+
+def get_foreign_keys(sql_data, *argv):
+    for d in sql_data:
+        for arg in argv:
+            foreign_table = arg['foreign_table']
+            primary_column = arg['primary_column']
+            class_name = arg['class_name']
+            graph_prop = arg['graph_prop']
+            primary_value = d[primary_column]
+            if primary_value is not None:
+                data = get_one(table_name=foreign_table, primary_column='uuid', primary_value=primary_value)
+                d[graph_prop] = eval(class_name)(**data)
+    return sql_data
+
+
+def str_to_class(s):
+    if s in globals() and isinstance(globals()[s], types.ClassType):
+        return globals()[s]
+    return None
+
+
 class Query(graphene.ObjectType):
     obs = graphene.List(Obs, )
-    encounter = graphene.List(Encounter, )
-    encounter_provider = graphene.List(EncounterProvider, )
-    person = graphene.List(Person, )
-    patient = graphene.List(Patient, )
-    person_name = graphene.List(PersonName, )
-    person_attribute = graphene.List(PersonAttribute, )
-    patient_identifier = graphene.List(PatientIdentifier, )
-    visit = graphene.List(Visit, )
-    person_address = graphene.List(PersonAddress, )
+    encounters = graphene.List(Encounter, )
+    encounter_providers = graphene.List(EncounterProvider, )
+    persons = graphene.List(Person, )
+    patients = graphene.List(Patient, )
+    person_names = graphene.List(PersonName, )
+    person_attributes = graphene.List(PersonAttribute, )
+    patient_identifiers = graphene.List(PatientIdentifier, )
+    visits = graphene.List(Visit, )
+    person_addresses = graphene.List(PersonAddress, )
+    person = graphene.Field(Person, id=graphene.String())
 
     @resolve_only_args
     def resolve_obs(self):
@@ -289,55 +343,65 @@ class Query(graphene.ObjectType):
         return all_data
 
     @resolve_only_args
-    def resolve_encounter(self):
+    def resolve_encounters(self):
         data = db.query("select * from encounter")
+
+        data = get_foreign_keys(data, *[{
+            'foreign_table': 'patient', 'foreign_key': 'patient_id', 'primary_column': 'patient_id',
+            'class_name': 'Patient', 'graph_prop': 'patient'
+        }])
+
         all_data = [Encounter(**d) for d in data]
         return all_data
 
     @resolve_only_args
-    def resolve_encounter_provider(self):
+    def resolve_encounter_providers(self):
         data = db.query("select * from encounter_provider")
         all_data = [EncounterProvider(**d) for d in data]
         return all_data
 
     @resolve_only_args
-    def resolve_person(self):
+    def resolve_persons(self):
         data = db.query("select * from person")
+        data = get_foreign_keys(data, *[{
+            'foreign_table': 'users', 'foreign_key': 'user_id', 'primary_column': 'creator'
+        }])
+
         all_data = [Person(**d) for d in data]
         return all_data
 
     @resolve_only_args
-    def resolve_patient(self):
+    def resolve_patients(self):
         data = db.query("select * from patient")
         all_data = [Patient(**d) for d in data]
         return all_data
 
     @resolve_only_args
-    def resolve_person_name(self):
+    def resolve_person_names(self):
         data = db.query("select * from person_name")
         all_data = [PersonName(**d) for d in data]
         return all_data
 
     @resolve_only_args
-    def resolve_person_attribute(self):
+    def resolve_person_attributes(self):
         data = db.query("select * from person_attribute")
         all_data = [PersonAttribute(**d) for d in data]
         return all_data
 
     @resolve_only_args
-    def resolve_patient_identifier(self):
+    def resolve_patient_identifiers(self):
         data = db.query("select * from patient_identifier")
         all_data = [PatientIdentifier(**d) for d in data]
         return all_data
 
     @resolve_only_args
-    def resolve_visit(self):
+    def resolve_visits(self):
         data = db.query("select * from visit")
         all_data = [Visit(**d) for d in data]
         return all_data
 
     @resolve_only_args
-    def resolve_person_address(self):
+    def resolve_person_addresses(self):
         data = db.query("select * from person_address")
         all_data = [PersonAddress(**d) for d in data]
         return all_data
