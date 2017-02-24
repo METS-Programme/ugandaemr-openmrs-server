@@ -78,7 +78,6 @@ def get_sync_item(sync_item, sync_item_type, facility):
             data = data_imported[sync_item_type]
             row = {}
             for k, v in data.items():
-                print inflection.underscore(k)
                 row[inflection.underscore(k)] = v['#text']
 
             obj['facility'] = facility

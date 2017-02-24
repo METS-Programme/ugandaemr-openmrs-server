@@ -1,340 +1,41 @@
-import graphene
-from graphene import relay
-from graphene import resolve_only_args
-from graphene_sqlalchemy import SQLAlchemyConnectionField, SQLAlchemyObjectType
-
-from core.sql_queries import query_one
-from database import Database
-
 import types
+
+import graphene
+import requests
+from graphene import resolve_only_args
+
+from schemas.encounter import Encounter
+from schemas.encounter_provider import EncounterProvider
+from schemas.obs import Obs
+from schemas.patient import Patient
+from schemas.patient_identifier import PatientIdentifier
+from schemas.person import Person
+from schemas.person_address import PersonAddress
+from schemas.person_attribute import PersonAttribute
+from schemas.person_name import PersonName
+from schemas.visit import Visit
+from database import Database
 
 db = Database()
 
 
-class Person(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-    gender = graphene.String()
-    birthdate = graphene.String()
-    birthdate_estimated = graphene.String()
-    dead = graphene.String()
-    death_date = graphene.String()
-
-    cause_of_death = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-    changed_by = graphene.String()
-    date_changed = graphene.String()
-
-    voided = graphene.String()
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-    void_reason = graphene.String()
-    uuid = graphene.String()
-
-    facility = graphene.String()
-    state = graphene.String()
-    deathdate_estimated = graphene.String()
-    birthtime = graphene.String()
-
-
-class Patient(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-
-    patient = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-    changed_by = graphene.String()
-    date_changed = graphene.String()
-
-    voided = graphene.String()
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-    void_reason = graphene.String()
-    allergy_status = graphene.String()
-
-    facility = graphene.String()
-    state = graphene.String()
-
-
-class Encounter(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-
-    encounter_type = graphene.String()
-    patient = graphene.Field(Patient)
-    location = graphene.String()
-    form = graphene.String()
-    encounter_datetime = graphene.String()
-
-    creator = graphene.String()
-    date_created = graphene.String()
-    voided = graphene.String()
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-
-    void_reason = graphene.String()
-    changed_by = graphene.String()
-    date_changed = graphene.String()
-    visit = graphene.String()
-    uuid = graphene.String()
-
-    facility = graphene.String()
-    state = graphene.String()
-
-
-class Obs(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-    person = graphene.String()
-    concept = graphene.String()
-    encounter = graphene.Field(Encounter)
-    order = graphene.String()
-    obs_datetime = graphene.String()
-
-    location = graphene.String()
-    obs_group = graphene.String()
-    accession_number = graphene.String()
-    value_group = graphene.String()
-
-    value_boolean = graphene.String()
-    value_coded = graphene.String()
-    value_coded_name = graphene.String()
-    value_drug = graphene.String()
-
-    value_datetime = graphene.String()
-    value_numeric = graphene.String()
-    value_modifier = graphene.String()
-    value_text = graphene.String()
-
-    value_complex = graphene.String()
-    comments = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-    voided = graphene.String()
-
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-    void_reason = graphene.String()
-    uuid = graphene.String()
-    facility = graphene.String()
-
-    state = graphene.String()
-    previous_version = graphene.String()
-
-
-class EncounterProvider(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-    encounter = graphene.String()
-    provider = graphene.String()
-    encounter_role = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-
-    uuid = graphene.String()
-
-
-class PersonName(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-
-    preferred = graphene.String()
-    person = graphene.String()
-    prefix = graphene.String()
-    given_name = graphene.String()
-    middle_name = graphene.String()
-
-    family_name_prefix = graphene.String()
-    family_name = graphene.String()
-    family_name2 = graphene.String()
-    family_name_suffix = graphene.String()
-
-    degree = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-    voided = graphene.String()
-    voided_by = graphene.String()
-
-    date_voided = graphene.String()
-    void_reason = graphene.String()
-    changed_by = graphene.String()
-    date_changed = graphene.String()
-    uuid = graphene.String()
-
-    facility = graphene.String()
-    state = graphene.String()
-
-
-class PersonAttribute(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-
-    person = graphene.String()
-    value = graphene.String()
-    person_attribute_type = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-
-    changed_by = graphene.String()
-    date_changed = graphene.String()
-    voided = graphene.String()
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-
-    void_reason = graphene.String()
-    uuid = graphene.String()
-    facility = graphene.String()
-    state = graphene.String()
-
-
-class PatientIdentifier(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-
-    patient = graphene.String()
-    identifier = graphene.String()
-    identifier_type = graphene.String()
-    preferred = graphene.String()
-    location = graphene.String()
-
-    creator = graphene.String()
-    date_created = graphene.String()
-    date_changed = graphene.String()
-    changed_by = graphene.String()
-    voided = graphene.String()
-
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-    void_reason = graphene.String()
-    uuid = graphene.String()
-    facility = graphene.String()
-
-    state = graphene.String()
-
-
-class Visit(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-
-    patient = graphene.String()
-    visit_type = graphene.String()
-    date_started = graphene.String()
-    date_stopped = graphene.String()
-
-    indication_concept = graphene.String()
-    location = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-    changed_by = graphene.String()
-
-    date_changed = graphene.String()
-    voided = graphene.String()
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-    void_reason = graphene.String()
-
-    uuid = graphene.String()
-    facility = graphene.String()
-    state = graphene.String()
-
-
-class PersonAddress(graphene.ObjectType):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    id = graphene.ID()
-
-    person = graphene.String()
-    preferred = graphene.String()
-    address1 = graphene.String()
-    address2 = graphene.String()
-    city_village = graphene.String()
-
-    state_province = graphene.String()
-    postal_code = graphene.String()
-    country = graphene.String()
-    latitude = graphene.String()
-    longitude = graphene.String()
-
-    start_date = graphene.String()
-    end_date = graphene.String()
-    creator = graphene.String()
-    date_created = graphene.String()
-    voided = graphene.String()
-
-    voided_by = graphene.String()
-    date_voided = graphene.String()
-    void_reason = graphene.String()
-    county_district = graphene.String()
-    address3 = graphene.String()
-
-    address4 = graphene.String()
-    address5 = graphene.String()
-    address6 = graphene.String()
-    date_changed = graphene.String()
-    changed_by = graphene.String()
-
-    uuid = graphene.String()
-    facility = graphene.String()
-    state = graphene.String()
-
-
-def get_one(**query_info):
-    return db.query_one_with_data(query_one, query_info)
-
-
-def get_foreign_keys(sql_data, *argv):
-    for d in sql_data:
-        for arg in argv:
-            foreign_table = arg['foreign_table']
-            primary_column = arg['primary_column']
-            class_name = arg['class_name']
-            graph_prop = arg['graph_prop']
-            primary_value = d[primary_column]
-            if primary_value is not None:
-                data = get_one(table_name=foreign_table, primary_column='uuid', primary_value=primary_value)
-                d[graph_prop] = eval(class_name)(**data)
-    return sql_data
-
-
-def str_to_class(s):
-    if s in globals() and isinstance(globals()[s], types.ClassType):
-        return globals()[s]
-    return None
+class Attribute(graphene.InputObjectType):
+    t = graphene.String(required=True)
+    v = graphene.String(required=True)
 
 
 class Query(graphene.ObjectType):
     obs = graphene.List(Obs, )
     encounters = graphene.List(Encounter, )
     encounter_providers = graphene.List(EncounterProvider, )
-    persons = graphene.List(Person, )
+    persons = graphene.List(Person, offset=graphene.Int(), limit=graphene.Int())
     patients = graphene.List(Patient, )
     person_names = graphene.List(PersonName, )
     person_attributes = graphene.List(PersonAttribute, )
     patient_identifiers = graphene.List(PatientIdentifier, )
     visits = graphene.List(Visit, )
     person_addresses = graphene.List(PersonAddress, )
-    person = graphene.Field(Person, id=graphene.String())
+    patient = graphene.Field(Patient, attribute=Attribute())
 
     @resolve_only_args
     def resolve_obs(self):
@@ -346,11 +47,6 @@ class Query(graphene.ObjectType):
     def resolve_encounters(self):
         data = db.query("select * from encounter")
 
-        data = get_foreign_keys(data, *[{
-            'foreign_table': 'patient', 'foreign_key': 'patient_id', 'primary_column': 'patient_id',
-            'class_name': 'Patient', 'graph_prop': 'patient'
-        }])
-
         all_data = [Encounter(**d) for d in data]
         return all_data
 
@@ -361,11 +57,11 @@ class Query(graphene.ObjectType):
         return all_data
 
     @resolve_only_args
-    def resolve_persons(self):
-        data = db.query("select * from person")
-        data = get_foreign_keys(data, *[{
-            'foreign_table': 'users', 'foreign_key': 'user_id', 'primary_column': 'creator'
-        }])
+    def resolve_persons(self, offset=None, limit=None):
+        if offset and limit:
+            data = db.query("select * from person LIMIT " + str(offset) + ", " + str(limit))
+        else:
+            data = db.query("select * from person")
 
         all_data = [Person(**d) for d in data]
         return all_data
@@ -405,6 +101,25 @@ class Query(graphene.ObjectType):
         data = db.query("select * from person_address")
         all_data = [PersonAddress(**d) for d in data]
         return all_data
+
+    @resolve_only_args
+    def resolve_patient(self, attribute=None):
+        data = None
+        if attribute:
+            attribute_type = attribute.get('t')
+            if attribute_type == 'a41339f9-5014-45f4-91d6-bab84c6c62f1':
+                r = requests.post('http://localhost:8080/fingerprint/', data={'fingerprint': attribute.get('v')})
+                patient = r.json()
+
+                if patient.get('person') != 'null':
+                    data = db.query_one("select * from patient where uuid='" + patient.get('person'))
+            else:
+                data = db.query_one(
+                    "select * from patient where uuid in (select person from person_attribute where person_attribute_type ='" + attribute_type + "' and value ='" + attribute.get('v') + "')")
+        if data:
+            all_data = Patient(**data)
+            return all_data
+        return None
 
 
 schema = graphene.Schema(query=Query)

@@ -9,3 +9,4 @@ datetime
 Flask
 Flask-GraphQL
 graphene[sqlalchemy]
+requests
