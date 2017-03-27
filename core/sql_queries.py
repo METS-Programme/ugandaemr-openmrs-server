@@ -76,6 +76,12 @@ add_encounter_role = (
     "VALUES (%(name)s,%(description)s,%(creator)s,%(date_created)s,%(changed_by)s,%(date_changed)s,%(retired)s,%(retired_by)s,%(date_retired)s,%(retire_reason)s,%(uuid)s,%(facility)s,%(state)s)"
 )
 
+add_fingerprint = (
+    "INSERT INTO fingerprint "
+    "(patient, finger, fingerprint, uploaded, facility, state) "
+    "VALUES (%(patient)s, %(finger)s, %(fingerprint)s, %(uploaded)s, %(facility)s, %(state)s)"
+)
+
 query_one = (
     "SELECT * FROM  %(table_name)s WHERE %(primary_column)s = %(primary_value)s"
 )

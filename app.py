@@ -474,6 +474,23 @@ def post_encounter_roles():
         return "415 Unsupported Media Type ;)"
 
 
+@app.route('/api/fingerprints', methods=['POST'])
+def post_fingerprints():
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.json
+
+        final_data = [dict(fingerprint_template, **x) for x in data]
+        db.insert_bulk(add_fingerprint, final_data)
+        return jsonify({
+            "response": "Successful",
+            'bang': "Bang",
+            'records': len(data)
+        })
+
+    else:
+        return "415 Unsupported Media Type ;)"
+
+
 app.add_url_rule('/api/query', view_func=GraphQLView.as_view('graphql', schema=schema, graphiql=True))
 
 if __name__ == '__main__':

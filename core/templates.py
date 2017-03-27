@@ -74,3 +74,7 @@ encounter_role_template = {
     'date_changed': None, 'retired': None, 'retired_by': None, 'date_retired': None, 'retire_reason': None,
     'uuid': None, 'facility': None, 'state': None
 }
+
+fingerprint_template = {
+    'patient': None, 'finger': None, 'fingerprint': None, 'uploaded': None, 'facility': None, 'state': None
+}
