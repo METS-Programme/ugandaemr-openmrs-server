@@ -40,7 +40,7 @@ class Query(graphene.ObjectType):
     patient_identifiers = graphene.List(PatientIdentifier, )
     visits = graphene.List(Visit, )
     person_addresses = graphene.List(PersonAddress, )
-    patient = graphene.Field(Patient, identifier=Identifier(), attribute=Attribute())
+    patient = graphene.Field(Patient, identifier=Identifier(), attribute=Attribute(), fingerprint=graphene.String())
 
     @resolve_only_args
     def resolve_obs(self):
@@ -108,9 +108,19 @@ class Query(graphene.ObjectType):
         return all_data
 
     @resolve_only_args
-    def resolve_patient(self, identifier=None, attribute=None):
+    def resolve_patient(self, identifier=None, attribute=None, fingerprint=None):
         data = None
-        if identifier is not None:
+
+        if fingerprint is not None:
+            r = requests.post('http://192.168.1.186:8084/fingerprint/', data={'fingerprint': fingerprint})
+            patient = r.json()
+
+            print patient
+
+            if patient.get('person') != 'null':
+                data = db.query_one("select * from patient where uuid='" + patient.get('person'))
+
+        elif identifier is not None:
             identifier_type = identifier.get('t')
             data = db.query_one(
                 "select * from patient where uuid in (select patient from patient_identifier where identifier_type ='" + identifier_type + "' and identifier ='" + identifier.get(
@@ -118,17 +128,9 @@ class Query(graphene.ObjectType):
 
         elif attribute is not None:
             attribute_type = attribute.get('t')
-            if attribute_type == 'a41339f9-5014-45f4-91d6-bab84c6c62f1':
-                r = requests.post('http://ugandaemr.mets.or.ug:8080/fingerprint/',
-                                  data={'fingerprint': attribute.get('v')})
-                patient = r.json()
-
-                if patient.get('person') != 'null':
-                    data = db.query_one("select * from patient where uuid='" + patient.get('person'))
-            else:
-                data = db.query_one(
-                    "select * from patient where uuid in (select person from person_attribute where person_attribute_type ='" + attribute_type + "' and value ='" + attribute.get(
-                        'v') + "')")
+            data = db.query_one(
+                "select * from patient where uuid in (select person from person_attribute where person_attribute_type ='" + attribute_type + "' and value ='" + attribute.get(
+                    'v') + "')")
         if data:
             all_data = Patient(**data)
             return all_data
