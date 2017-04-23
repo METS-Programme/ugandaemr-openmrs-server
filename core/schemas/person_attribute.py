@@ -1,6 +1,7 @@
 import graphene
 
 from core.database import Database
+from core.schemas.facility import Facility
 
 db = Database()
 
@@ -27,3 +28,10 @@ class PersonAttribute(graphene.ObjectType):
     uuid = graphene.String()
     facility = graphene.String()
     state = graphene.String()
+
+    person_attribute_facility = graphene.Field(Facility, )
+
+    def resolve_person_attribute_facility(self, args, *_):
+        data = db.query_one("select * from facility where uuid ='" + self.facility + "'")
+        all_data = Facility(**data)
+        return all_data

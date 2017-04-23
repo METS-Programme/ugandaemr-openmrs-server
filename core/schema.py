@@ -4,12 +4,12 @@ import graphene
 import requests
 from graphene import resolve_only_args
 
+from core.schemas.facility import Facility
 from schemas.encounter import Encounter
 from schemas.encounter_provider import EncounterProvider
 from schemas.obs import Obs
 from schemas.patient import Patient
 from schemas.patient_identifier import PatientIdentifier
-from schemas.person import Person
 from schemas.person_address import PersonAddress
 from schemas.person_attribute import PersonAttribute
 from schemas.person_name import PersonName
@@ -33,18 +33,21 @@ class Query(graphene.ObjectType):
     obs = graphene.List(Obs, )
     encounters = graphene.List(Encounter, )
     encounter_providers = graphene.List(EncounterProvider, )
-    persons = graphene.List(Person, offset=graphene.Int(), limit=graphene.Int())
+    # persons = graphene.List(Person, offset=graphene.Int(), limit=graphene.Int())
     patients = graphene.List(Patient, )
     person_names = graphene.List(PersonName, )
     person_attributes = graphene.List(PersonAttribute, )
     patient_identifiers = graphene.List(PatientIdentifier, )
     visits = graphene.List(Visit, )
     person_addresses = graphene.List(PersonAddress, )
-    patient = graphene.Field(Patient, identifier=Identifier(), attribute=Attribute(), fingerprint=graphene.String())
+    patient = graphene.Field(Patient, patient=graphene.String(), identifier=Identifier(), attribute=Attribute(),
+                             patients=graphene.List(graphene.String))
+    facilities = graphene.List(Facility, )
 
     @resolve_only_args
     def resolve_obs(self):
-        data = db.query("select * from obs")
+        data = db.query(
+            "select o.*,e.encounter_datetime as encounter_date,e.encounter_type as encounter_type from obs o inner join encounter e on(o.encounter = e.uuid)")
         all_data = [Obs(**d) for d in data]
         return all_data
 
@@ -61,15 +64,15 @@ class Query(graphene.ObjectType):
         all_data = [EncounterProvider(**d) for d in data]
         return all_data
 
-    @resolve_only_args
-    def resolve_persons(self, offset=None, limit=None):
-        if offset and limit:
-            data = db.query("select * from person LIMIT " + str(offset) + ", " + str(limit))
-        else:
-            data = db.query("select * from person")
-
-        all_data = [Person(**d) for d in data]
-        return all_data
+    # @resolve_only_args
+    # def resolve_persons(self, offset=None, limit=None):
+    #     if offset and limit:
+    #         data = db.query("select * from person LIMIT " + str(offset) + ", " + str(limit))
+    #     else:
+    #         data = db.query("select * from person")
+    #
+    #     all_data = [Person(**d) for d in data]
+    #     return all_data
 
     @resolve_only_args
     def resolve_patients(self):
@@ -108,18 +111,14 @@ class Query(graphene.ObjectType):
         return all_data
 
     @resolve_only_args
-    def resolve_patient(self, identifier=None, attribute=None, fingerprint=None):
+    def resolve_patient(self, patient=None, identifier=None, attribute=None, patients=None):
         data = None
 
-        if fingerprint is not None:
-            r = requests.post('http://192.168.1.186:8084/fingerprint/', data={'fingerprint': fingerprint})
-            patient = r.json()
-
-            print patient
-
-            if patient.get('person') != 'null':
-                data = db.query_one("select * from patient where uuid='" + patient.get('person'))
-
+        if patient is not None:
+            data = db.query_one("select * from patient where uuid ='" + patient + "'")
+        elif patients is not None:
+            q = ','.join(map("'{0}'".format, patients))
+            data = db.query_one("select * from patient where uuid in(" + q + ")")
         elif identifier is not None:
             identifier_type = identifier.get('t')
             data = db.query_one(
@@ -134,7 +133,14 @@ class Query(graphene.ObjectType):
         if data:
             all_data = Patient(**data)
             return all_data
+
         return None
+
+    @resolve_only_args
+    def resolve_facilities(self):
+        data = db.query("select * from facility")
+        all_data = [Facility(**d) for d in data]
+        return all_data
 
 
 schema = graphene.Schema(query=Query)

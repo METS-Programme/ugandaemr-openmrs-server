@@ -1,6 +1,7 @@
 import graphene
 
 from core.database import Database
+from core.schemas.facility import Facility
 
 db = Database()
 
@@ -36,3 +37,10 @@ class PersonName(graphene.ObjectType):
 
     facility = graphene.String()
     state = graphene.String()
+
+    person_name_facility = graphene.Field(Facility, )
+
+    def resolve_person_name_facility(self, args, *_):
+        data = db.query_one("select * from facility where uuid ='" + self.facility + "'")
+        all_data = Facility(**data)
+        return all_data

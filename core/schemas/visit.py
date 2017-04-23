@@ -1,5 +1,10 @@
 import graphene
 
+from core.database import Database
+from core.schemas.facility import Facility
+
+db = Database()
+
 
 class Visit(graphene.ObjectType):
     def __init__(self, **entries):
@@ -27,3 +32,10 @@ class Visit(graphene.ObjectType):
     uuid = graphene.String()
     facility = graphene.String()
     state = graphene.String()
+
+    visit_facility = graphene.Field(Facility, )
+
+    def resolve_visit_facility(self, args, *_):
+        data = db.query_one("select * from facility where uuid ='" + self.facility + "'")
+        all_data = Facility(**data)
+        return all_data

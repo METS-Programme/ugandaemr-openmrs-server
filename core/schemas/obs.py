@@ -1,7 +1,8 @@
 import graphene
+from graphene import resolve_only_args
 
 from core.database import Database
-from core.schemas.encounter import Encounter
+from core.schemas.facility import Facility
 
 db = Database()
 
@@ -13,7 +14,7 @@ class Obs(graphene.ObjectType):
     id = graphene.ID()
     person = graphene.String()
     concept = graphene.String()
-    encounter = graphene.Field(Encounter)
+    encounter = graphene.String()
     order = graphene.String()
     obs_datetime = graphene.String()
 
@@ -46,3 +47,13 @@ class Obs(graphene.ObjectType):
 
     state = graphene.String()
     previous_version = graphene.String()
+    encounter_date = graphene.String()
+    encounter_type = graphene.String()
+
+    obs_facility = graphene.Field(Facility, )
+
+    @resolve_only_args
+    def resolve_obs_facility(self):
+        data = db.query_one("select * from facility where uuid ='" + self.facility + "'")
+        all_data = Facility(**data)
+        return all_data

@@ -9,6 +9,7 @@ class Database:
 
     def __init__(self):
         self.connection = MySQLdb.connect(self.host, self.user, self.password, self.db)
+        self.connection.ping(True)
         self.connection.set_character_set('utf8')
         self.cursor = self.connection.cursor()
         self.cursor.execute('SET NAMES utf8;')

@@ -1,6 +1,7 @@
 import graphene
 
 from core.database import Database
+from core.schemas.facility import Facility
 
 db = Database()
 
@@ -30,3 +31,10 @@ class PatientIdentifier(graphene.ObjectType):
     facility = graphene.String()
 
     state = graphene.String()
+
+    patient_identifier_facility = graphene.Field(Facility, )
+
+    def resolve_patient_identifier_facility(self, args, *_):
+        data = db.query_one("select * from facility where uuid ='" + self.facility + "'")
+        all_data = Facility(**data)
+        return all_data

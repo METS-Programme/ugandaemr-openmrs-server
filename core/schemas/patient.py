@@ -1,7 +1,9 @@
 import graphene
+from graphene import resolve_only_args
 
 from core.database import Database
 from core.schemas.encounter import Encounter
+from core.schemas.facility import Facility
 from core.schemas.obs import Obs
 from core.schemas.patient_identifier import PatientIdentifier
 from core.schemas.person_address import PersonAddress
@@ -44,8 +46,13 @@ class Patient(graphene.ObjectType):
     attributes = graphene.List(PersonAttribute, )
     names = graphene.List(PersonName, )
     identifiers = graphene.List(PatientIdentifier, )
-    encounters = graphene.List(Encounter, )
-    obs = graphene.List(Obs, )
+    encounters = graphene.List(Encounter, types=graphene.List(graphene.String))
+    obs = graphene.List(Obs, encounters=graphene.String())
+
+    most_recent_encounter = graphene.Field(Encounter)
+    summary_page = graphene.Field(Encounter)
+
+    patient_facility = graphene.Field(Facility, )
 
     def resolve_addresses(self, args, *_):
         data = db.query("select * from person_address where person = '" + self.uuid + "'")
@@ -64,6 +71,7 @@ class Patient(graphene.ObjectType):
 
     def resolve_identifiers(self, args, *_):
         data = db.query("select * from patient_identifier where patient = '" + self.uuid + "'")
+        print "select * from patient_identifier where patient = '" + self.uuid + "'"
         all_data = [PatientIdentifier(**d) for d in data]
         return all_data
 
@@ -73,6 +81,25 @@ class Patient(graphene.ObjectType):
         return all_data
 
     def resolve_obs(self, args, *_):
-        data = db.query("select * from obs where person = '" + self.uuid + "'")
+        data = db.query("select * from obs where person = '" + self.uuid + "' LIMIT 5")
         all_data = [Obs(**d) for d in data]
+        return all_data
+
+    def resolve_patient_facility(self, args, *_):
+        data = db.query_one("select * from facility where uuid ='" + self.facility + "'")
+        all_data = Facility(**data)
+        return all_data
+
+    def resolve_most_recent_encounter(self, args, *_):
+        data = db.query_one(
+            "select * from encounter where uuid=(select uuid from (select uuid,MAX(encounter_datetime) from encounter where patient='" + self.uuid + "') A)")
+        all_data = Encounter(**data)
+        return all_data
+
+    def resolve_summary_page(self, args, *_):
+        print "select * from encounter where uuid=(select uuid from (select uuid,MAX(encounter_datetime) from encounter where patient='" + self.uuid + "') A)"
+
+        data = db.query_one(
+            "select * from encounter where uuid=(select uuid from (select uuid,MAX(encounter_datetime) from encounter where patient='" + self.uuid + "' and encounter_type = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f') A)")
+        all_data = Encounter(**data)
         return all_data

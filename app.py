@@ -57,6 +57,18 @@ def convert_boolean_columns(data, columns):
     return data
 
 
+def convert_array_to_byte(data, columns):
+    selected_element = data[0]
+    keys = list(selected_element.keys())
+
+    intersection = set(keys).intersection(columns)
+
+    for d in data:
+        d.update((k, v.decode('utf-8')) for k, v in d.iteritems() if
+                 k in intersection and v is not None)
+    return data
+
+
 def to_dict(input_ordered_dict):
     return loads(dumps(input_ordered_dict))
 
