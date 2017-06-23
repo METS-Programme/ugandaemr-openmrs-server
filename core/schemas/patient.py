@@ -71,7 +71,7 @@ class Patient(graphene.ObjectType):
 
     def resolve_identifiers(self, args, *_):
         data = db.query("select * from patient_identifier where patient = '" + self.uuid + "'")
-        print "select * from patient_identifier where patient = '" + self.uuid + "'"
+        print ("select * from patient_identifier where patient = '" + self.uuid + "'")
         all_data = [PatientIdentifier(**d) for d in data]
         return all_data
 
@@ -97,7 +97,7 @@ class Patient(graphene.ObjectType):
         return all_data
 
     def resolve_summary_page(self, args, *_):
-        print "select * from encounter where uuid=(select uuid from (select uuid,MAX(encounter_datetime) from encounter where patient='" + self.uuid + "') A)"
+        print ("select * from encounter where uuid=(select uuid from (select uuid,MAX(encounter_datetime) from encounter where patient='" + self.uuid + "') A)")
 
         data = db.query_one(
             "select * from encounter where uuid=(select uuid from (select uuid,MAX(encounter_datetime) from encounter where patient='" + self.uuid + "' and encounter_type = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f') A)")

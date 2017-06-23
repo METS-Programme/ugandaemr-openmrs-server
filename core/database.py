@@ -1,4 +1,7 @@
 import MySQLdb
+import _mysql
+
+from MySQLdb.cursors import DictCursor
 
 
 class Database:
@@ -11,7 +14,7 @@ class Database:
         self.connection = MySQLdb.connect(self.host, self.user, self.password, self.db)
         self.connection.ping(True)
         self.connection.set_character_set('utf8')
-        self.cursor = self.connection.cursor()
+        self.cursor = self.connection.cursor(DictCursor)
         self.cursor.execute('SET NAMES utf8;')
         self.cursor.execute('SET CHARACTER SET utf8;')
         self.cursor.execute('SET character_set_connection=utf8;')
@@ -22,45 +25,40 @@ class Database:
             self.connection.commit()
             return self.cursor.lastrowid
 
-        except MySQLdb.Error, e:
+        except _mysql.Error as e:
             self.connection.rollback()
             try:
-                print "MySQL Error [%d]: %s" % (e.args[0], e.args[1])
+                print("MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
             except IndexError:
-                print "MySQL Error: %s" % str(e)
+                print("MySQL Error: %s" % str(e))
 
     def insert_bulk(self, q, data):
         try:
             self.cursor.executemany(q, data)
             self.connection.commit()
-        except MySQLdb.Error, e:
+        except _mysql.Error as e:
             self.connection.rollback()
             try:
-                print "MySQL Error [%d]: %s" % (e.args[0], e.args[1])
+                print("MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
             except IndexError:
-                print "MySQL Error: %s" % str(e)
+                print("MySQL Error: %s" % str(e))
 
     def query(self, query):
-        cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute(query)
-        return cursor.fetchall()
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
 
     def query_one(self, query):
-        cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute(query)
-        return cursor.fetchone()
+        self.cursor.execute(query)
+        return self.cursor.fetchone()
 
     def query_with_data(self, query, data):
-        cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute(query, data)
-        return cursor.fetchall()
+        self.cursor.execute(query, data)
+        return self.cursor.fetchall()
 
     def query_one_with_data(self, query, data):
-        cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
-
         query = query % data
-        cursor.execute(query)
-        return cursor.fetchone()
+        self.cursor.execute(query)
+        return self.cursor.fetchone()
 
-    def __del__(self):
-        self.connection.close()
+    # def __del__(self):
+    #     self.connection.close()

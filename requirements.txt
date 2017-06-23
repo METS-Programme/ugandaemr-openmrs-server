@@ -4,9 +4,8 @@ flask-cors
 flask_restful
 inflection
 xmltodict
-MySQL-python
+mysqlclient
 datetime
-Flask
 Flask-GraphQL
 graphene[sqlalchemy]
 requests
