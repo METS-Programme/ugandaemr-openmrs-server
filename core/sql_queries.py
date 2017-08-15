@@ -78,8 +78,8 @@ add_encounter_role = (
 
 add_fingerprint = (
     "INSERT INTO fingerprint "
-    "(patient, finger, fingerprint, uploaded, facility, state) "
-    "VALUES (%(patient)s, %(finger)s, %(fingerprint)s, %(uploaded)s, %(facility)s, %(state)s)"
+    "(patient, finger, fingerprint, date_created, facility, state) "
+    "VALUES (%(patient)s, %(finger)s, %(fingerprint)s, %(date_created)s, %(facility)s, %(state)s)"
 )
 
 query_one = (
