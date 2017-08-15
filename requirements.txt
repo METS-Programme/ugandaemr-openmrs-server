@@ -6,7 +6,6 @@ inflection
 xmltodict
 mysqlclient
 datetime
-Flask
 Flask-GraphQL
 graphene[sqlalchemy]
 requests
