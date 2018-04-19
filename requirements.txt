@@ -1,0 +1,11 @@
+SQLAlchemy
+Flask
+flask-cors
+flask_restful
+inflection
+xmltodict
+mysqlclient
+datetime
+Flask-GraphQL
+graphene[sqlalchemy]
+requests
