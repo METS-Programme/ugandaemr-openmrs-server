@@ -5,16 +5,16 @@ import requests
 from graphene import resolve_only_args
 
 from core.schemas.facility import Facility
-from core.schemas.encounter import Encounter
-from core.schemas.encounter_provider import EncounterProvider
-from core.schemas.obs import Obs
-from core.schemas.patient import Patient
-from core.schemas.patient_identifier import PatientIdentifier
-from core.schemas.person_address import PersonAddress
-from core.schemas.person_attribute import PersonAttribute
-from core.schemas.person_name import PersonName
-from core.schemas.visit import Visit
-from core.database import Database
+from schemas.encounter import Encounter
+from schemas.encounter_provider import EncounterProvider
+from schemas.obs import Obs
+from schemas.patient import Patient
+from schemas.patient_identifier import PatientIdentifier
+from schemas.person_address import PersonAddress
+from schemas.person_attribute import PersonAttribute
+from schemas.person_name import PersonName
+from schemas.visit import Visit
+from database import Database
 
 db = Database()
 
