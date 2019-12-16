@@ -42,6 +42,7 @@ class Query(graphene.ObjectType):
     person_addresses = graphene.List(PersonAddress, )
     patient = graphene.Field(Patient, patient=graphene.String(), identifier=Identifier(), attribute=Attribute(),
                              patients=graphene.List(graphene.String))
+    patient_obs = graphene.List(Obs, patientuuid=graphene.String(), conceptsuuid=graphene.List(graphene.String))
     facilities = graphene.List(Facility, )
 
     @resolve_only_args
@@ -132,6 +133,19 @@ class Query(graphene.ObjectType):
                     'v') + "')")
         if data:
             all_data = Patient(**data)
+            return all_data
+
+        return None
+
+    @resolve_only_args
+    def resolve_patient_obs(self, patientuuid=None, conceptsuuid=None):
+        data = None
+
+        if patientuuid is not None and (conceptsuuid is not None or conceptsuuid is not None):
+            concepts = ','.join(map("'{0}'".format, conceptsuuid))
+            data = db.query("select * from obs where person ='" + patientuuid + "' and concept in(" + concepts + ")")
+        if data:
+            all_data = [Obs(**d) for d in data]
             return all_data
 
         return None

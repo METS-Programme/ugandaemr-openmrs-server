@@ -48,10 +48,9 @@ class Patient(graphene.ObjectType):
     identifiers = graphene.List(PatientIdentifier, )
     encounters = graphene.List(Encounter, types=graphene.List(graphene.String))
     obs = graphene.List(Obs, encounters=graphene.String())
-
     most_recent_encounter = graphene.Field(Encounter)
+    most_recent_hiv_encounter = graphene.Field(Encounter)
     summary_page = graphene.Field(Encounter)
-
     patient_facility = graphene.Field(Facility, )
 
     def resolve_addresses(self, args, *_):
@@ -91,6 +90,12 @@ class Patient(graphene.ObjectType):
         return all_data
 
     def resolve_most_recent_encounter(self, args, *_):
+        data = db.query_one(
+            "select * from encounter where uuid=(select uuid from (select uuid,MAX(encounter_datetime) from encounter where patient='" + self.uuid + "') A)")
+        all_data = Encounter(**data)
+        return all_data
+
+    def resolve_most_recent_hiv_encounter(self, args, *_):
         data = db.query_one(
             "select * from encounter where uuid=(select uuid from (select uuid,MAX(encounter_datetime) from encounter where patient='" + self.uuid + "' and encounter_type = '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f') A)")
         all_data = Encounter(**data)
