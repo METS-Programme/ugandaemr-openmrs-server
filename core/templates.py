@@ -75,6 +75,10 @@ encounter_role_template = {
     'uuid': None, 'facility': None, 'state': None
 }
 
+transfered_patient_template = {
+    'patient': None, 'transfered_in': None, 'transfered_in_from': None, 'transfered_in_date': None, 'transfered_out': None, 'transfered_out_from': None, 'transfered_out_date': None
+}
+
 fingerprint_template = {
     'patient': None, 'finger': None, 'fingerprint': None, 'uploaded': None, 'facility': None, 'state': None
 }

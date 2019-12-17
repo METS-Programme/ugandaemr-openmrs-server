@@ -165,6 +165,9 @@ def process_files():
                 elif table == 'encounter_roles':
                     template = encounter_role_template
                     query = add_encounter_role
+                elif table == 'transfered_patient':
+                    template = transfered_patient_template
+                    query = add_transfered_patient
 
                 with open(f) as data_file:
                     data = json.load(data_file)

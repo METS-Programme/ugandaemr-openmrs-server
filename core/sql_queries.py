@@ -76,6 +76,12 @@ add_encounter_role = (
     "VALUES (%(name)s,%(description)s,%(creator)s,%(date_created)s,%(changed_by)s,%(date_changed)s,%(retired)s,%(retired_by)s,%(date_retired)s,%(retire_reason)s,%(uuid)s,%(facility)s,%(state)s)"
 )
 
+add_transfered_patient = (
+    "INSERT INTO add_transfered_patient "
+    "(patient,transfered_in,transfered_in_from,transfered_in_date,transfered_out,transfered_out_from,transfered_out_date) "
+    "VALUES (%(patient)s,%(transfered_in)s,%(transfered_in_from)s,%(transfered_in_date)s,%(transfered_out)s,%(transfered_out_from)s,%(transfered_out_date)s)"
+)
+
 add_fingerprint = (
     "INSERT INTO fingerprint "
     "(patient, finger, fingerprint, date_created, facility, state) "

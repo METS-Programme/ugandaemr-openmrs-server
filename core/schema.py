@@ -5,6 +5,7 @@ import requests
 from graphene import resolve_only_args
 
 from core.schemas.facility import Facility
+from core.schemas.transfered_patient import TransferedPatient
 from core.schemas.encounter import Encounter
 from core.schemas.encounter_provider import EncounterProvider
 from core.schemas.obs import Obs
@@ -44,6 +45,7 @@ class Query(graphene.ObjectType):
                              patients=graphene.List(graphene.String))
     patient_obs = graphene.List(Obs, patientuuid=graphene.String(), conceptsuuid=graphene.List(graphene.String))
     facilities = graphene.List(Facility, )
+    transfered_patient = graphene.List(TransferedPatient, transfer_out_from=graphene.String())
 
     @resolve_only_args
     def resolve_obs(self):
@@ -155,6 +157,18 @@ class Query(graphene.ObjectType):
         data = db.query("select * from facility")
         all_data = [Facility(**d) for d in data]
         return all_data
+
+    @resolve_only_args
+    def resolve_transfered_patient(self, transfer_out_from=None):
+        data = None
+        if transfer_out_from is not None:
+            data = db.query("select * from transfered_patient where transfered_out ='false' and transfered_out_from = '" + transfer_out_from +"'")
+            all_data = [TransferedPatient(**d) for d in data]
+            return all_data
+        if data:
+            all_data = [TransferedPatient(**d) for d in data]
+            return all_data
+        return None
 
 
 schema = graphene.Schema(query=Query)
